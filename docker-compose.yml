@@ -1,0 +1,25 @@
+version: "3.7"
+services:
+  dequiz_db:
+    container_name: dequiz_db
+    image: "postgres:14"
+    volumes:
+      - "dequiz_db_postgres_data:/var/lib/postgresql/data"
+    ports:
+      - "5432:5432"
+    env_file:
+      - postgresql.env
+    networks:
+      backend:
+        ipv4_address: 10.5.0.11
+
+volumes:
+  dequiz_db_postgres_data:
+    external: true
+
+networks:
+  backend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/24
