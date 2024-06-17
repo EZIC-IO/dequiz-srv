@@ -5,12 +5,15 @@ import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ImageService } from './image.service';
 import { RedisModule } from '@songkeys/nestjs-redis';
+import { ScheduleModule } from '@nestjs/schedule';
+import { IPFSService } from './ipfs.service';
 
 @Global()
 @Module({
   imports: [
     ConfigModule.forRoot(),
     HttpModule,
+    ScheduleModule.forRoot(),
     RedisModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -20,6 +23,6 @@ import { RedisModule } from '@songkeys/nestjs-redis';
     }),
   ],
   controllers: [SrvController],
-  providers: [SrvService, ImageService, ConfigService],
+  providers: [SrvService, ImageService, IPFSService, ConfigService],
 })
 export class SrvModule {}
