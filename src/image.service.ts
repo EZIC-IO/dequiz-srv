@@ -1,6 +1,8 @@
 import { HttpService } from '@nestjs/axios';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRedis } from '@songkeys/nestjs-redis';
+import Redis from 'ioredis';
 
 @Injectable()
 export class ImageService {
@@ -10,6 +12,7 @@ export class ImageService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    @InjectRedis() private readonly redis: Redis,
   ) {}
 
   async generateImage(prompt: string): Promise<string> {
@@ -30,7 +33,9 @@ export class ImageService {
         },
       );
       const imageUrl = response.data.data[0].url;
-      return imageUrl;
+      const tempRandomWalletForTest = `0x${Math.random().toString(36).slice(2, 7)}`;
+      await this.redis.set(tempRandomWalletForTest, imageUrl);
+      return this.redis.get(tempRandomWalletForTest);
     } catch (err: any) {
       this.logger.debug(err.response.data.error);
       throw new BadRequestException(err.response.data.error.message);

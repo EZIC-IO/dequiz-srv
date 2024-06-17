@@ -1,21 +1,36 @@
-version: "3.7"
+version: '3.7'
 services:
-  dequiz_db:
-    container_name: dequiz_db
-    image: "postgres:14"
+  # dequiz_db:
+  #   container_name: dequiz_db
+  #   image: "postgres:14"
+  #   volumes:
+  #     - "dequiz_db_postgres_data:/var/lib/postgresql/data"
+  #   ports:
+  #     - "5432:5432"
+  #   env_file:
+  #     - postgresql.env
+  #   networks:
+  #     backend:
+  #       ipv4_address: 10.5.0.11
+
+  dequiz_redis:
+    container_name: dequiz_redis
+    image: redis
+    restart: always
+    hostname: dequiz_redis
     volumes:
-      - "dequiz_db_postgres_data:/var/lib/postgresql/data"
+      - dequiz_redis:/redis/data
     ports:
-      - "5432:5432"
-    env_file:
-      - postgresql.env
+      - 6379:6379
     networks:
       backend:
-        ipv4_address: 10.5.0.11
+        ipv4_address: 10.5.0.12
 
 volumes:
-  dequiz_db_postgres_data:
+  dequiz_redis:
     external: true
+  # dequiz_db_postgres_data:
+  #   external: true
 
 networks:
   backend:
