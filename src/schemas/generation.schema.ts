@@ -41,14 +41,17 @@ export class GenerationAction {
   @Prop()
   imageUrl: string;
 
-  @Prop({ type: NFTMetadata })
-  metadata: NFTMetadata;
-
   @Prop()
   imageBareIPFS: string;
 
   @Prop()
+  imageGatewayIPFS: string;
+
+  @Prop()
   metadataBareIPFS: string;
+
+  @Prop({ type: NFTMetadata })
+  metadata: NFTMetadata;
 
   @Prop({ default: Date.now })
   createdAt: number;

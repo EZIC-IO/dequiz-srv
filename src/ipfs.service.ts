@@ -96,6 +96,7 @@ export class IPFSService {
                   status: GenerationActionStatus.PUBLISHED,
                   imageUUID: fileId,
                   imageBareIPFS: ipfsImgURL,
+                  imageGatewayIPFS: this.ipfsSdk.resolveScheme(ipfsImgURL),
                   metadata: preparedJsonMetadata.metadata,
                   metadataBareIPFS: ipfsJsonURL,
                 })
