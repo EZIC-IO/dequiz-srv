@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 import { SrvService } from './srv.service';
 import { ImageService } from './image.service';
 import { IPFSService } from './ipfs.service';
@@ -19,8 +20,19 @@ export class SrvController {
 
   @Post('gen-img')
   async genImage(@Body() data: GenImgDto) {
-    const imgUrl = await this.imgService.generateImage(data.prompt);
-    await this.ipfsService.uploadNFTImgAndMetadata(imgUrl);
-    return { imgUrl, success: true };
+    // >> This UUID will be passed from FE
+    const sessionUUID = uuidv4();
+    const genAction = await this.imgService.generateImage(
+      data.prompt,
+      sessionUUID,
+    );
+
+    // >> TODO: Send IPFS upload async and return immediately here;
+
+    await this.ipfsService.uploadNFTImgAndMetadata(
+      genAction.imageUrl,
+      sessionUUID,
+    );
+    return genAction;
   }
 }

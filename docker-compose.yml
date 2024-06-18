@@ -1,18 +1,5 @@
 version: '3.7'
 services:
-  # dequiz_db:
-  #   container_name: dequiz_db
-  #   image: "postgres:14"
-  #   volumes:
-  #     - "dequiz_db_postgres_data:/var/lib/postgresql/data"
-  #   ports:
-  #     - "5432:5432"
-  #   env_file:
-  #     - postgresql.env
-  #   networks:
-  #     backend:
-  #       ipv4_address: 10.5.0.11
-
   dequiz_redis:
     container_name: dequiz_redis
     image: redis
@@ -26,11 +13,24 @@ services:
       backend:
         ipv4_address: 10.5.0.12
 
+  dequiz_mongo:
+    container_name: dequiz_mongo
+    image: mongo
+    ports:
+      - '27017:27017'
+    restart: always
+    hostname: dequiz_mongo
+    volumes:
+      - dequiz_mongo:/data/db
+    env_file:
+      - mongo.env
+    networks:
+      backend:
+        ipv4_address: 10.5.0.13
+
 volumes:
+  dequiz_mongo:
   dequiz_redis:
-    external: true
-  # dequiz_db_postgres_data:
-  #   external: true
 
 networks:
   backend:
