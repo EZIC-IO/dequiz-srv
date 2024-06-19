@@ -74,9 +74,9 @@ export class PromptConstructionService {
       case RPGClass.ROGUE:
         return 'crimson daggers, shadow enchantment spells';
       case RPGClass.WIZARD:
-        return 'arcane spells, shaped in mysterious enchantment circle';
+        return 'arcane spells, magic circle';
       default:
-        return 'arcane spells, shaped in mysterious enchantment circle';
+        return 'arcane spells, magic circle';
     }
   }
 }

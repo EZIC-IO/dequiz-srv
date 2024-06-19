@@ -40,7 +40,9 @@ export class IPFSService {
     });
   }
 
-  public async uploadNFTImgAndMetadata(genActionId: string) {
+  public async uploadNFTImgAndMetadata(
+    genActionId: string,
+  ): Promise<GenerationAction> {
     const genAction = await this.generationActionModel
       .findById(genActionId)
       .exec();
@@ -49,70 +51,56 @@ export class IPFSService {
       throw new BadRequestException('Invalid generation action');
 
     // >> Download image to local FS
-    const response = await this.httpService.axiosRef.get(genAction.imageUrl, {
+    const imgFilePath = await this._downloadImage(genAction.imageUrl);
+
+    // >> Upload image to IPFS
+    const ipfsImgURL = await this.ipfsSdk.upload(fse.readFileSync(imgFilePath));
+    this._logIPFSUploads({
+      ipfsURL: ipfsImgURL,
+      type: 'IMG',
+      genActionId,
+    });
+
+    // >> Upload JSON metadata to IPFS;
+    const preparedJsonMetadata = this._prepareJsonMetadata(ipfsImgURL);
+    const ipfsJsonURL = await this.ipfsSdk.upload(preparedJsonMetadata);
+    this._logIPFSUploads({
+      ipfsURL: ipfsJsonURL,
+      type: 'JSON Metadata',
+      genActionId,
+    });
+
+    // >> Generation published to IPFS completely;
+    await genAction
+      .updateOne({
+        status: GenerationActionStatus.PUBLISHED,
+        imageBareIPFS: ipfsImgURL,
+        imageGatewayIPFS: this.ipfsSdk.resolveScheme(ipfsImgURL),
+        metadata: preparedJsonMetadata,
+        metadataBareIPFS: ipfsJsonURL,
+      })
+      .exec();
+
+    const updatedGenAction = await this.generationActionModel
+      .findById(genAction.id)
+      .exec();
+
+    this._scheduleFileCleanup(imgFilePath, this.ttlInMinutes);
+    return updatedGenAction;
+  }
+
+  private async _downloadImage(imgUrl: string): Promise<string> {
+    const response = await this.httpService.axiosRef.get(imgUrl, {
       responseType: 'stream',
     });
     const fileId = uuidv4();
     const filePath = path.join(__dirname, '..', 'img-files', `${fileId}.png`);
 
-    const writer = fse.createWriteStream(filePath);
-    response.data.pipe(writer);
-
-    writer.on('error', (error) => {
-      this.logger.error(
-        `Error writing img file for GEN ACTION ${genActionId}: ${error.message}`,
-      );
-    });
-
-    writer.on('finish', () => {
-      // >> Upload image to IPFS
-      const ipfsUpload = this.ipfsSdk.upload(fse.readFileSync(filePath));
-      ipfsUpload.then(
-        (ipfsImgURL) => {
-          this._logIPFSUploads({
-            ipfsURL: ipfsImgURL,
-            type: 'IMG',
-            genActionId,
-          });
-          // >> Upload JSON metadata to IPFS;
-          const preparedJsonMetadata = this._prepareJsonMetadata(ipfsImgURL);
-          const jsonMetadataUpload = this.ipfsSdk.upload(
-            fse.readFileSync(preparedJsonMetadata.filePath),
-          );
-          jsonMetadataUpload.then(
-            (ipfsJsonURL) => {
-              this._logIPFSUploads({
-                ipfsURL: ipfsJsonURL,
-                type: 'JSON Metadata',
-                genActionId,
-              });
-
-              // Generation published to IPFS completely;
-              genAction
-                .updateOne({
-                  status: GenerationActionStatus.PUBLISHED,
-                  imageUUID: fileId,
-                  imageBareIPFS: ipfsImgURL,
-                  imageGatewayIPFS: this.ipfsSdk.resolveScheme(ipfsImgURL),
-                  metadata: preparedJsonMetadata.metadata,
-                  metadataBareIPFS: ipfsJsonURL,
-                })
-                .exec();
-            },
-            (err) =>
-              this.logger.error(
-                `Unable to upload JSON Metadata to IPFS for GEN ACTION ${genActionId}: ${err}`,
-              ),
-          );
-        },
-        (err) =>
-          this.logger.error(
-            `Unable to upload to image to IPFS for GEN ACTION ${genActionId}: ${err}`,
-          ),
-      );
-
-      // >> Cleanup file after specified amount of minutes;
-      this._scheduleFileCleanup(filePath, this.ttlInMinutes);
+    return new Promise((resolve, reject) => {
+      const writer = fse.createWriteStream(filePath);
+      response.data.pipe(writer);
+      writer.on('finish', () => resolve(filePath));
+      writer.on('error', (err) => reject(err));
     });
   }
 
@@ -128,25 +116,12 @@ export class IPFSService {
     this.schedulerRegistry.addTimeout(`RM_FILE >> ${filePath}`, rmFileJob);
   }
 
-  private _prepareJsonMetadata(ipfsImgUrl: string): {
-    filePath: string;
-    metadata: NFTMetadata;
-  } {
+  private _prepareJsonMetadata(ipfsImgUrl: string): NFTMetadata {
     const metadata: NFTMetadata = {
       ...this.testMetadata,
       image: ipfsImgUrl,
     };
-    const metadataJSON = JSON.stringify(metadata, null, 2);
-    const fileName = uuidv4();
-    const filePath = path.join(
-      __dirname,
-      '..',
-      'json-metadata-files',
-      `${fileName}.json`,
-    );
-    fse.writeFileSync(filePath, metadataJSON, 'utf-8');
-    this._scheduleFileCleanup(filePath, this.ttlInMinutes);
-    return { filePath, metadata };
+    return metadata;
   }
 
   private _logIPFSUploads({ ipfsURL, genActionId, type }: IPFSLogData) {

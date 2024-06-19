@@ -36,9 +36,6 @@ export class GenerationAction {
   status: string;
 
   @Prop()
-  imageUUID: string;
-
-  @Prop()
   imageUrl: string;
 
   @Prop()

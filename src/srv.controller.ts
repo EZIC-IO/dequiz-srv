@@ -43,7 +43,6 @@ export class SrvController {
   @Throttle({ default: { limit: 4, ttl: 10 * 60000 } })
   @Post('init-publish')
   async initiatePublishToIPFS(@Body() { genActionId }: InitPublishDto) {
-    await this.ipfsService.uploadNFTImgAndMetadata(genActionId);
-    return { success: true };
+    return this.ipfsService.uploadNFTImgAndMetadata(genActionId);
   }
 }

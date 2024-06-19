@@ -15,6 +15,8 @@ import {
 } from './schemas/generation.schema';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { PromptConstructionService } from './prompt.service';
+import { WebsocketGateway } from './websocket.gateway';
+import { SocketService } from './socket.service';
 
 @Global()
 @Module({
@@ -55,6 +57,8 @@ import { PromptConstructionService } from './prompt.service';
     IPFSService,
     ConfigService,
     PromptConstructionService,
+    WebsocketGateway,
+    SocketService,
   ],
 })
 export class SrvModule {}
