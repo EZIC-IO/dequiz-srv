@@ -31,7 +31,7 @@ export class ImageService {
     this.epochModel.findOne().then((epoch) => (this.currentEpoch = epoch));
   }
 
-  async generateImage(prompt: string, sessionUUID: string) {
+  async generateImage(genPrompt: string, sessionUUID: string) {
     const alreadyQueued = await this.generationActionModel.findOne({
       sessionUUID,
       status: GenerationActionStatus.PROCESSING,
@@ -51,7 +51,7 @@ export class ImageService {
         'https://api.openai.com/v1/images/generations',
         {
           model: 'dall-e-3',
-          prompt: prompt,
+          prompt: genPrompt,
           n: 1,
           size: '1024x1024',
         },

@@ -14,6 +14,7 @@ import {
   GenerationActionSchema,
 } from './schemas/generation.schema';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { PromptConstructionService } from './prompt.service';
 
 @Global()
 @Module({
@@ -48,6 +49,12 @@ import { ThrottlerModule } from '@nestjs/throttler';
     ]),
   ],
   controllers: [SrvController],
-  providers: [SrvService, ImageService, IPFSService, ConfigService],
+  providers: [
+    SrvService,
+    ImageService,
+    IPFSService,
+    ConfigService,
+    PromptConstructionService,
+  ],
 })
 export class SrvModule {}

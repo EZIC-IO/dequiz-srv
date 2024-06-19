@@ -5,11 +5,13 @@ import { IPFSService } from './ipfs.service';
 import { GenImgDto, InitPublishDto } from './dto';
 import { RateLimiterProxyGuard } from './guards/rate-limiter-proxy.guard';
 import { Throttle } from '@nestjs/throttler';
+import { PromptConstructionService } from './prompt.service';
 
 @Controller()
 export class SrvController {
   constructor(
     private readonly srvService: SrvService,
+    private readonly promptConstructionService: PromptConstructionService,
     private readonly imgService: ImageService,
     private readonly ipfsService: IPFSService,
   ) {}
@@ -24,8 +26,12 @@ export class SrvController {
   @Throttle({ default: { limit: 4, ttl: 45 * 60000 } })
   @Post('gen-img')
   async genImage(@Body() data: GenImgDto) {
+    const genPrompt =
+      this.promptConstructionService.constructFantasyWorldRPGPrompt(
+        data.payload,
+      );
     const genAction = await this.imgService.generateImage(
-      data.prompt,
+      genPrompt,
       data.sessionUUID,
     );
 
