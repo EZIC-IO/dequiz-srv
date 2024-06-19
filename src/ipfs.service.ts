@@ -3,9 +3,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ThirdwebStorage } from '@thirdweb-dev/storage';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { InjectRedis } from '@songkeys/nestjs-redis';
 
-import Redis from 'ioredis';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import * as fse from 'fs-extra';
@@ -30,7 +28,6 @@ export class IPFSService {
   };
 
   constructor(
-    @InjectRedis() private readonly redis: Redis,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
     private readonly schedulerRegistry: SchedulerRegistry,
@@ -39,20 +36,20 @@ export class IPFSService {
   ) {
     // >> Init IPFS SDK
     this.ipfsSdk = new ThirdwebStorage({
-      secretKey: configService.get<string>('THIRDWEB_API_KEY'),
+      secretKey: this.configService.get<string>('THIRDWEB_API_KEY'),
     });
   }
 
-  public async uploadNFTImgAndMetadata(imgUrl: string, sessionUUID: string) {
+  public async uploadNFTImgAndMetadata(genActionId: string) {
     const genAction = await this.generationActionModel
-      .findOne({ sessionUUID })
-      .sort({ createdAt: -1 })
+      .findById(genActionId)
       .exec();
 
-    if (!genAction) throw new BadRequestException('No session;');
+    if (!genAction || !genAction.imageUrl)
+      throw new BadRequestException('Invalid generation action');
 
     // >> Download image to local FS
-    const response = await this.httpService.axiosRef.get(imgUrl, {
+    const response = await this.httpService.axiosRef.get(genAction.imageUrl, {
       responseType: 'stream',
     });
     const fileId = uuidv4();
@@ -63,7 +60,7 @@ export class IPFSService {
 
     writer.on('error', (error) => {
       this.logger.error(
-        `Error writing img file for session ${sessionUUID}: ${error.message}`,
+        `Error writing img file for GEN ACTION ${genActionId}: ${error.message}`,
       );
     });
 
@@ -75,7 +72,7 @@ export class IPFSService {
           this._logIPFSUploads({
             ipfsURL: ipfsImgURL,
             type: 'IMG',
-            sessionUUID,
+            genActionId,
           });
           // >> Upload JSON metadata to IPFS;
           const preparedJsonMetadata = this._prepareJsonMetadata(ipfsImgURL);
@@ -87,7 +84,7 @@ export class IPFSService {
               this._logIPFSUploads({
                 ipfsURL: ipfsJsonURL,
                 type: 'JSON Metadata',
-                sessionUUID,
+                genActionId,
               });
 
               // Generation published to IPFS completely;
@@ -104,13 +101,13 @@ export class IPFSService {
             },
             (err) =>
               this.logger.error(
-                `Unable to upload JSON Metadata to IPFS for session ${sessionUUID}: ${err}`,
+                `Unable to upload JSON Metadata to IPFS for GEN ACTION ${genActionId}: ${err}`,
               ),
           );
         },
         (err) =>
           this.logger.error(
-            `Unable to upload to image to IPFS for session ${sessionUUID}: ${err}`,
+            `Unable to upload to image to IPFS for GEN ACTION ${genActionId}: ${err}`,
           ),
       );
 
@@ -152,10 +149,10 @@ export class IPFSService {
     return { filePath, metadata };
   }
 
-  private _logIPFSUploads({ ipfsURL, sessionUUID, type }: IPFSLogData) {
+  private _logIPFSUploads({ ipfsURL, genActionId, type }: IPFSLogData) {
     const resolvedURL = this.ipfsSdk.resolveScheme(ipfsURL);
     this.logger.log(
-      `IPFS ${type} Upload Succeeded for ${sessionUUID}\n${type} IPFS URL - ${ipfsURL}\n${type} Gateway URL - ${resolvedURL}`,
+      `IPFS ${type} Upload Succeeded for GEN ACTION ${genActionId}\n${type} IPFS URL - ${ipfsURL}\n${type} Gateway URL - ${resolvedURL}`,
     );
   }
 }
@@ -163,5 +160,5 @@ export class IPFSService {
 type IPFSLogData = {
   ipfsURL: string;
   type: 'IMG' | 'JSON Metadata';
-  sessionUUID: string;
+  genActionId: string;
 };

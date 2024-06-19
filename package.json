@@ -28,6 +28,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/schedule": "^4.0.2",
     "@nestjs/swagger": "^7.3.1",
+    "@nestjs/throttler": "^5.2.0",
     "@songkeys/nestjs-redis": "^10.0.0",
     "@supercharge/request-ip": "^1.2.0",
     "@thirdweb-dev/storage": "^2.0.15",

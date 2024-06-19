@@ -13,6 +13,7 @@ import {
   GenerationAction,
   GenerationActionSchema,
 } from './schemas/generation.schema';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Global()
 @Module({
@@ -20,6 +21,12 @@ import {
     ConfigModule.forRoot(),
     HttpModule,
     ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 1 * 60000,
+        limit: 100,
+      },
+    ]),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

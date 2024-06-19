@@ -32,10 +32,20 @@ export class ImageService {
   }
 
   async generateImage(prompt: string, sessionUUID: string) {
+    const alreadyQueued = await this.generationActionModel.findOne({
+      sessionUUID,
+      status: GenerationActionStatus.PROCESSING,
+    });
+    if (alreadyQueued) {
+      throw new BadRequestException(
+        'NFT generation is already in queue, please wait for completion',
+      );
+    }
     const genAction = await new this.generationActionModel({
       epoch: this.currentEpoch,
       sessionUUID,
     }).save();
+
     try {
       const response = await this.httpService.axiosRef.post(
         'https://api.openai.com/v1/images/generations',
