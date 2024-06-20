@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
-import { Epoch } from './epoch.schema';
+import { RPGVocation } from 'src/dto';
 
 export type GenerationActionDocument = HydratedDocument<GenerationAction>;
 
@@ -36,6 +36,9 @@ export class GenerationAction {
   status: string;
 
   @Prop()
+  vocation: RPGVocation;
+
+  @Prop()
   imageUrl: string;
 
   @Prop()
@@ -54,7 +57,7 @@ export class GenerationAction {
   createdAt: number;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Epoch', required: true })
-  epoch!: Epoch;
+  epochId: string;
 }
 
 export const GenerationActionSchema =

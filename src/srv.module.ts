@@ -17,6 +17,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { PromptConstructionService } from './prompt.service';
 import { WebsocketGateway } from './websocket.gateway';
 import { SocketService } from './socket.service';
+import { NFTMetadataService } from './nft-metadata.service';
 
 @Global()
 @Module({
@@ -57,6 +58,7 @@ import { SocketService } from './socket.service';
     IPFSService,
     ConfigService,
     PromptConstructionService,
+    NFTMetadataService,
     WebsocketGateway,
     SocketService,
   ],

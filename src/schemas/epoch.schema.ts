@@ -6,10 +6,16 @@ export type EpochDocument = HydratedDocument<Epoch>;
 @Schema()
 export class Epoch {
   @Prop({ required: true })
-  title!: string;
+  title: string;
+
+  @Prop()
+  description: string;
+
+  @Prop()
+  numericId: number;
 
   @Prop({ required: true })
-  contractAddress!: string;
+  contractAddress: string;
 }
 
 export const EpochSchema = SchemaFactory.createForClass(Epoch);

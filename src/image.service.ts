@@ -10,6 +10,7 @@ import {
 } from './schemas/generation.schema';
 import { Model } from 'mongoose';
 import { Epoch } from './schemas/epoch.schema';
+import { RPGVocation } from './dto';
 
 @Injectable()
 export class ImageService {
@@ -31,7 +32,11 @@ export class ImageService {
     this.epochModel.findOne().then((epoch) => (this.currentEpoch = epoch));
   }
 
-  async generateImage(genPrompt: string, sessionUUID: string) {
+  async generateImage(
+    genPrompt: string,
+    sessionUUID: string,
+    vocation: RPGVocation,
+  ) {
     const alreadyQueued = await this.generationActionModel.findOne({
       sessionUUID,
       status: GenerationActionStatus.PROCESSING,
@@ -42,7 +47,8 @@ export class ImageService {
       );
     }
     const genAction = await new this.generationActionModel({
-      epoch: this.currentEpoch,
+      epochId: this.currentEpoch,
+      vocation,
       sessionUUID,
     }).save();
 

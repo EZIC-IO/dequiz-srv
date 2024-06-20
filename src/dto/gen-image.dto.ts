@@ -4,8 +4,8 @@ export class GenImgDto {
   payload: GenPayloadDto;
 }
 
-export enum RPGClass {
-  WARRIOR = 'WARRIOR',
+export enum RPGVocation {
+  KNIGHT = 'KNIGHT',
   WIZARD = 'WIZARD',
   ROGUE = 'ROGUE',
   RANGER = 'RANGER',
@@ -105,7 +105,7 @@ export enum FacialHair {
 export default HairColor;
 
 export class GenPayloadDto {
-  rpgClass: RPGClass;
+  rpgVocation: RPGVocation;
   gender?: Gender;
   skinTone?: SkinTone;
   hairColor?: HairColor;

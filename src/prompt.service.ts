@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Gender, GenPayloadDto, RPGClass } from './dto';
+import { Gender, GenPayloadDto, RPGVocation } from './dto';
 
 @Injectable()
 export class PromptConstructionService {
   constructor() {}
 
   public constructFantasyWorldRPGPrompt({
-    rpgClass,
+    rpgVocation,
     eyeColor,
     facialHair,
     gender,
@@ -14,13 +14,13 @@ export class PromptConstructionService {
     hairLength,
     skinTone,
   }: GenPayloadDto): string {
-    let prompt = `A ${gender !== Gender.OTHER ? gender : ''} ${rpgClass} from a fantasy RPG world, depicted in an anime style. `;
+    let prompt = `A ${gender !== Gender.OTHER ? gender : ''} ${rpgVocation} from a fantasy RPG world, depicted in an anime style. `;
 
     prompt += `${this._getWho(gender)} has ${hairLength} ${hairColor} hair, ${eyeColor} eyes, and ${this._getWhos(gender)} face is clearly visible. `;
-    prompt += `${this._getWho(gender)} is wearing ${this._getClothes(rpgClass)}, practical clothing, ready for action. `;
+    prompt += `${this._getWho(gender)} is wearing ${this._getClothes(rpgVocation)}, practical clothing, ready for action. `;
     prompt += `${this._getWhos(gender)} skin tone is somewhat close to ${skinTone}. `;
     prompt += `${gender === Gender.MALE ? `He has ${facialHair} facial hair (beard)` : ''}. `;
-    prompt += `The background features depiction of ${this._getBackground(rpgClass)}.`;
+    prompt += `The background features depiction of ${this._getBackground(rpgVocation)}.`;
     return prompt;
   }
 
@@ -50,30 +50,30 @@ export class PromptConstructionService {
     }
   }
 
-  private _getClothes(rpgClass: RPGClass) {
-    switch (rpgClass) {
-      case RPGClass.WARRIOR:
+  private _getClothes(rpgVocation: RPGVocation) {
+    switch (rpgVocation) {
+      case RPGVocation.KNIGHT:
         return 'Armor';
-      case RPGClass.RANGER:
+      case RPGVocation.RANGER:
         return 'Leather armor';
-      case RPGClass.ROGUE:
+      case RPGVocation.ROGUE:
         return 'Light armor';
-      case RPGClass.WIZARD:
+      case RPGVocation.WIZARD:
         return 'Light robes';
       default:
         return 'Light armor';
     }
   }
 
-  private _getBackground(rpgClass: RPGClass) {
-    switch (rpgClass) {
-      case RPGClass.WARRIOR:
+  private _getBackground(rpgVocation: RPGVocation) {
+    switch (rpgVocation) {
+      case RPGVocation.KNIGHT:
         return 'crimson swords, warcry enchantment spells';
-      case RPGClass.RANGER:
+      case RPGVocation.RANGER:
         return 'bow arrows, nautre enchantment spells';
-      case RPGClass.ROGUE:
-        return 'crimson daggers, shadow enchantment spells';
-      case RPGClass.WIZARD:
+      case RPGVocation.ROGUE:
+        return 'crimson daggers, shaped in pentagram circle with arcane magic';
+      case RPGVocation.WIZARD:
         return 'arcane spells, magic circle';
       default:
         return 'arcane spells, magic circle';

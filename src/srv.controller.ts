@@ -33,6 +33,7 @@ export class SrvController {
     const genAction = await this.imgService.generateImage(
       genPrompt,
       data.sessionUUID,
+      data.payload.rpgVocation,
     );
 
     return genAction;
@@ -42,7 +43,12 @@ export class SrvController {
   @UseGuards(RateLimiterProxyGuard)
   @Throttle({ default: { limit: 4, ttl: 10 * 60000 } })
   @Post('init-publish')
-  async initiatePublishToIPFS(@Body() { genActionId }: InitPublishDto) {
-    return this.ipfsService.uploadNFTImgAndMetadata(genActionId);
+  async initiatePublishToIPFS(@Body() { genActionId, name }: InitPublishDto) {
+    const ipfsImgURL = await this.ipfsService.uploadNFTImg(genActionId);
+    return this.ipfsService.uploadNFTMetadata({
+      genActionId,
+      ipfsImgURL,
+      name,
+    });
   }
 }

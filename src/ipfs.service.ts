@@ -14,6 +14,7 @@ import {
   NFTMetadata,
 } from './schemas/generation.schema';
 import { Model } from 'mongoose';
+import { NFTMetadataService } from './nft-metadata.service';
 
 @Injectable()
 export class IPFSService {
@@ -30,6 +31,7 @@ export class IPFSService {
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    private readonly nftMetadataService: NFTMetadataService,
     private readonly schedulerRegistry: SchedulerRegistry,
     @InjectModel(GenerationAction.name)
     private generationActionModel: Model<GenerationAction>,
@@ -40,53 +42,60 @@ export class IPFSService {
     });
   }
 
-  public async uploadNFTImgAndMetadata(
-    genActionId: string,
-  ): Promise<GenerationAction> {
+  public async uploadNFTImg(genActionId: string): Promise<string> {
     const genAction = await this.generationActionModel
       .findById(genActionId)
       .exec();
 
-    if (!genAction || !genAction.imageUrl)
-      throw new BadRequestException('Invalid generation action');
+    this._ensureGenActionIsValid(genAction);
 
     // >> Download image to local FS
     const imgFilePath = await this._downloadImage(genAction.imageUrl);
 
     // >> Upload image to IPFS
     const ipfsImgURL = await this.ipfsSdk.upload(fse.readFileSync(imgFilePath));
-    this._logIPFSUploads({
-      ipfsURL: ipfsImgURL,
-      type: 'IMG',
-      genActionId,
+
+    this._scheduleFileCleanup(imgFilePath, this.ttlInMinutes);
+    return ipfsImgURL;
+  }
+
+  public async uploadNFTMetadata({
+    genActionId,
+    ipfsImgURL,
+    name,
+  }: {
+    genActionId: string;
+    ipfsImgURL: string;
+    name: string;
+  }): Promise<GenerationAction> {
+    const genAction = await this.generationActionModel
+      .findById(genActionId)
+      .exec();
+
+    this._ensureGenActionIsValid(genAction);
+
+    const metadata = await this.nftMetadataService.prepareMetadata({
+      vocation: genAction.vocation,
+      epochId: genAction.epochId,
+      ipfsImgURL,
+      name,
     });
 
     // >> Upload JSON metadata to IPFS;
-    const preparedJsonMetadata = this._prepareJsonMetadata(ipfsImgURL);
-    const ipfsJsonURL = await this.ipfsSdk.upload(preparedJsonMetadata);
-    this._logIPFSUploads({
-      ipfsURL: ipfsJsonURL,
-      type: 'JSON Metadata',
-      genActionId,
-    });
+    const ipfsJsonURL = await this.ipfsSdk.upload(metadata);
 
-    // >> Generation published to IPFS completely;
+    // >> Generation published to IPFS successfully;
     await genAction
       .updateOne({
         status: GenerationActionStatus.PUBLISHED,
-        imageBareIPFS: ipfsImgURL,
-        imageGatewayIPFS: this.ipfsSdk.resolveScheme(ipfsImgURL),
-        metadata: preparedJsonMetadata,
+        imageBareIPFS: metadata.image,
+        imageGatewayIPFS: this.ipfsSdk.resolveScheme(metadata.image),
+        metadata,
         metadataBareIPFS: ipfsJsonURL,
       })
       .exec();
 
-    const updatedGenAction = await this.generationActionModel
-      .findById(genAction.id)
-      .exec();
-
-    this._scheduleFileCleanup(imgFilePath, this.ttlInMinutes);
-    return updatedGenAction;
+    return this.generationActionModel.findById(genAction.id).exec();
   }
 
   private async _downloadImage(imgUrl: string): Promise<string> {
@@ -116,24 +125,13 @@ export class IPFSService {
     this.schedulerRegistry.addTimeout(`RM_FILE >> ${filePath}`, rmFileJob);
   }
 
-  private _prepareJsonMetadata(ipfsImgUrl: string): NFTMetadata {
-    const metadata: NFTMetadata = {
-      ...this.testMetadata,
-      image: ipfsImgUrl,
-    };
-    return metadata;
-  }
+  private _ensureGenActionIsValid(genAction: GenerationAction): void {
+    const genActionValid =
+      genAction &&
+      genAction.status === GenerationActionStatus.GENERATED &&
+      genAction.imageUrl;
 
-  private _logIPFSUploads({ ipfsURL, genActionId, type }: IPFSLogData) {
-    const resolvedURL = this.ipfsSdk.resolveScheme(ipfsURL);
-    this.logger.log(
-      `IPFS ${type} Upload Succeeded for GEN ACTION ${genActionId}\n${type} IPFS URL - ${ipfsURL}\n${type} Gateway URL - ${resolvedURL}`,
-    );
+    if (!genActionValid)
+      throw new BadRequestException('Invalid generation action');
   }
 }
-
-type IPFSLogData = {
-  ipfsURL: string;
-  type: 'IMG' | 'JSON Metadata';
-  genActionId: string;
-};
