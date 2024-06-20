@@ -14,13 +14,15 @@ export class PromptConstructionService {
     hairLength,
     skinTone,
   }: GenPayloadDto): string {
-    let prompt = `A ${gender !== Gender.OTHER ? gender : ''} ${rpgVocation} from a fantasy RPG world, depicted in an anime style. `;
-
+    let prompt = `An anime-style ${gender !== Gender.OTHER ? gender : ''} ${rpgVocation} from a fantasy RPG world. `;
+    prompt += `The style is bright, vibrant, and majestic. The canvas should never be white. `;
     prompt += `${this._getWho(gender)} has ${hairLength} ${hairColor} hair, ${eyeColor} eyes, and ${this._getWhos(gender)} face is clearly visible. `;
     prompt += `${this._getWho(gender)} is wearing ${this._getClothes(rpgVocation)}, practical clothing, ready for action. `;
-    prompt += `${this._getWhos(gender)} skin tone is somewhat close to ${skinTone}. `;
-    prompt += `${gender === Gender.MALE ? `He has ${facialHair} facial hair (beard)` : ''}. `;
-    prompt += `The background features depiction of ${this._getBackground(rpgVocation)}.`;
+    prompt += `${this._getWhos(gender)} skin tone is similar to ${skinTone}. `;
+    if (gender === Gender.MALE) {
+      prompt += `He has ${facialHair} facial hair (beard). `;
+    }
+    prompt += `The background features ${this._getBackground(rpgVocation)} without unnecessary symbols or writings.`;
     return prompt;
   }
 
@@ -68,15 +70,15 @@ export class PromptConstructionService {
   private _getBackground(rpgVocation: RPGVocation) {
     switch (rpgVocation) {
       case RPGVocation.KNIGHT:
-        return 'crimson swords, warcry enchantment spells';
+        return 'anime crimson swords, warcry enchantment spells';
       case RPGVocation.RANGER:
-        return 'bow arrows, nautre enchantment spells';
+        return 'anime bow arrows, nautre enchantment spells';
       case RPGVocation.ROGUE:
-        return 'crimson daggers, shaped in pentagram circle with arcane magic';
+        return 'anime crimson daggers, shaped in pentagram circle with arcane magic';
       case RPGVocation.WIZARD:
-        return 'arcane spells, magic circle';
+        return 'anime arcane spells, magic circle';
       default:
-        return 'arcane spells, magic circle';
+        return 'anime arcane spells, magic circle';
     }
   }
 }
