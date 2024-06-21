@@ -1,5 +1,18 @@
 version: '3.7'
 services:
+  dequiz_srv:
+    container_name: dequiz_srv
+    build:
+      context: .
+    image: dequiz_srv
+    env_file:
+      - .env
+    ports:
+      - '3030:3030'
+    networks:
+      dequiz:
+        ipv4_address: 10.101.0.11
+
   dequiz_mongo:
     container_name: dequiz_mongo
     image: mongo
@@ -12,15 +25,12 @@ services:
     env_file:
       - mongo.env
     networks:
-      backend:
-        ipv4_address: 10.5.0.13
+      dequiz:
+        ipv4_address: 10.101.0.12
 
 volumes:
   dequiz_mongo:
 
 networks:
-  backend:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.5.0.0/24
+  dequiz:
+    external: true
