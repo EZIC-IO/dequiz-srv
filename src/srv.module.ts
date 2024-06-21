@@ -34,7 +34,7 @@ import { NFTMetadataService } from './nft-metadata.service';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URL'),
-        dbName: 'core',
+        dbName: 'dequiz',
       }),
       inject: [ConfigService],
     }),

@@ -15,6 +15,6 @@
 
 > IMPORTANT!
 > Create subnet manually (verify that it is not already occupied):
-> `docker network create --subnet=10.101.0.0/24 backend`
+> `docker network create --subnet=10.101.0.0/24 dequiz`
 
 `docker-compose up .`

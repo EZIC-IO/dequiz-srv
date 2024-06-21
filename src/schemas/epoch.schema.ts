@@ -3,7 +3,7 @@ import { HydratedDocument } from 'mongoose';
 
 export type EpochDocument = HydratedDocument<Epoch>;
 
-@Schema()
+@Schema({ collection: 'epoch' })
 export class Epoch {
   @Prop({ required: true })
   title: string;
