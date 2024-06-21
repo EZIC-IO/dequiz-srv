@@ -4,7 +4,6 @@ import { SrvService } from './srv.service';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ImageService } from './image.service';
-import { RedisModule } from '@songkeys/nestjs-redis';
 import { ScheduleModule } from '@nestjs/schedule';
 import { IPFSService } from './ipfs.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -38,13 +37,6 @@ import { NFTMetadataService } from './nft-metadata.service';
         dbName: 'core',
       }),
       inject: [ConfigService],
-    }),
-    RedisModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        config: { url: configService.get<string>('REDIS_URL') },
-      }),
     }),
     MongooseModule.forFeature([
       { name: Epoch.name, schema: EpochSchema },

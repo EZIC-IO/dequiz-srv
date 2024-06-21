@@ -2,8 +2,6 @@ import { HttpService } from '@nestjs/axios';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import { InjectRedis } from '@songkeys/nestjs-redis';
-import Redis from 'ioredis';
 import {
   GenerationAction,
   GenerationActionStatus,
@@ -25,7 +23,6 @@ export class ImageService {
     private generationActionModel: Model<GenerationAction>,
     @InjectModel(Epoch.name)
     private epochModel: Model<Epoch>,
-    @InjectRedis() private readonly redis: Redis,
   ) {
     // >> Initialize current epoch;
     // >> TODO: Add ability to set current epoch in db;
