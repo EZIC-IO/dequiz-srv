@@ -1,14 +1,86 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRedis } from '@songkeys/nestjs-redis';
-import { Redis } from 'ioredis';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import {
+  GenerationAction,
+  GenerationActionStatus,
+} from './schemas/generation.schema';
+import { Model } from 'mongoose';
+import { ConfigService } from '@nestjs/config';
+import { Epoch } from './schemas/epoch.schema';
+import { ReportSuccessfulMintDto } from './dto';
+import { EXTERNAL_CONVENIENCE_BASE_URLS } from './constants';
 
 @Injectable()
 export class SrvService {
-  constructor(@InjectRedis() private readonly redis: Redis) {}
+  constructor(
+    private configService: ConfigService,
+    @InjectModel(GenerationAction.name)
+    private generationActionModel: Model<GenerationAction>,
+    @InjectModel(Epoch.name)
+    private epochModel: Model<Epoch>,
+  ) {}
 
-  async getHello(): Promise<string> {
-    const tempRandomWalletForTest = `0x${Math.random().toString(36).slice(2, 7)}`;
-    await this.redis.set(tempRandomWalletForTest, 'TEST!');
-    return this.redis.get(tempRandomWalletForTest);
+  getHello(): string {
+    return 'hello';
+  }
+
+  async getLatestGenActionBySessionUUID(
+    sessionUUID: string,
+  ): Promise<GenerationAction> {
+    const genAction = await this.generationActionModel
+      .findOne({ sessionUUID })
+      .sort({ createdAt: -1 })
+      .exec();
+    if (!genAction) {
+      return null;
+    }
+
+    return genAction;
+  }
+
+  async reportSuccessfulMint({
+    genActionId,
+    mintTx,
+    nftTokenId,
+  }: ReportSuccessfulMintDto): Promise<UpdatedFields> {
+    const genAction = await this.generationActionModel.findById(genActionId);
+    if (genAction.status !== GenerationActionStatus.PUBLISHED) {
+      throw new BadRequestException('Incorrect generation action;');
+    }
+
+    const epoch = await this.epochModel.findById(genAction.epochId);
+    if (!epoch) {
+      throw new InternalServerErrorException('Sorry, something went wrong;');
+    }
+
+    const openSeaBaseUrl =
+      this.configService.get<string>('NET') === 'mainnet'
+        ? EXTERNAL_CONVENIENCE_BASE_URLS.mainnet.openSea
+        : EXTERNAL_CONVENIENCE_BASE_URLS.testnet.openSea;
+
+    const txBlockExplorerBaseUrl =
+      this.configService.get<string>('NET') === 'mainnet'
+        ? EXTERNAL_CONVENIENCE_BASE_URLS.mainnet.txBlockExplorer
+        : EXTERNAL_CONVENIENCE_BASE_URLS.testnet.txBlockExplorer;
+
+    const updatedFields: UpdatedFields = {
+      status: GenerationActionStatus.MINTED,
+      mintTx,
+      openSeaUrl: `${openSeaBaseUrl}/${epoch.contractAddress}/${nftTokenId}`,
+      txBlockExplorerUrl: `${txBlockExplorerBaseUrl}/${mintTx}`,
+    };
+
+    await genAction.updateOne(updatedFields).exec();
+
+    return updatedFields;
   }
 }
+
+type UpdatedFields = Pick<
+  GenerationAction,
+  'status' | 'mintTx' | 'openSeaUrl' | 'txBlockExplorerUrl'
+>;

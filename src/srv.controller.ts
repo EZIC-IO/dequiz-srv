@@ -1,8 +1,8 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { SrvService } from './srv.service';
 import { ImageService } from './image.service';
 import { IPFSService } from './ipfs.service';
-import { GenImgDto, InitPublishDto } from './dto';
+import { GenImgDto, InitPublishDto, ReportSuccessfulMintDto } from './dto';
 import { RateLimiterProxyGuard } from './guards/rate-limiter-proxy.guard';
 import { Throttle } from '@nestjs/throttler';
 import { PromptConstructionService } from './prompt.service';
@@ -17,8 +17,13 @@ export class SrvController {
   ) {}
 
   @Get()
-  getHello(): Promise<string> {
+  getHello(): string {
     return this.srvService.getHello();
+  }
+
+  @Get('latest-gen-action/:sessionUUID')
+  async getLatestGenAction(@Param('sessionUUID') sessionUUID: string) {
+    return this.srvService.getLatestGenActionBySessionUUID(sessionUUID);
   }
 
   // >> Image generation is available for 4 requests per 45 minutes to prevent abuse
@@ -50,5 +55,10 @@ export class SrvController {
       ipfsImgURL,
       name,
     });
+  }
+
+  @Post('report-successful-mint')
+  async reportSuccessfulMing(@Body() data: ReportSuccessfulMintDto) {
+    return this.srvService.reportSuccessfulMint(data);
   }
 }

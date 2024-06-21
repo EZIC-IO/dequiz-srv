@@ -53,6 +53,15 @@ export class GenerationAction {
   @Prop({ type: NFTMetadata })
   metadata: NFTMetadata;
 
+  @Prop()
+  mintTx: string;
+
+  @Prop()
+  txBlockExplorerUrl: string;
+
+  @Prop()
+  openSeaUrl: string;
+
   @Prop({ default: Date.now })
   createdAt: number;
 
