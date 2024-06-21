@@ -29,10 +29,10 @@ export class SrvService {
   }
 
   async getLatestGenActionBySessionUUID(
-    sessionUUID: string,
+    identityHash: string,
   ): Promise<GenerationAction> {
     const genAction = await this.generationActionModel
-      .findOne({ sessionUUID })
+      .findOne({ identityHash })
       .sort({ createdAt: -1 })
       .exec();
     if (!genAction) {

@@ -21,9 +21,9 @@ export class SrvController {
     return this.srvService.getHello();
   }
 
-  @Get('latest-gen-action/:sessionUUID')
-  async getLatestGenAction(@Param('sessionUUID') sessionUUID: string) {
-    return this.srvService.getLatestGenActionBySessionUUID(sessionUUID);
+  @Get('latest-gen-action/:identityHash')
+  async getLatestGenAction(@Param('identityHash') identityHash: string) {
+    return this.srvService.getLatestGenActionBySessionUUID(identityHash);
   }
 
   // >> Image generation is available for 4 requests per 45 minutes to prevent abuse
@@ -37,7 +37,7 @@ export class SrvController {
       );
     const genAction = await this.imgService.generateImage(
       genPrompt,
-      data.sessionUUID,
+      data.identityHash,
       data.payload.rpgVocation,
     );
 

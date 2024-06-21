@@ -1,6 +1,6 @@
 export class GenImgDto {
   epochId: string;
-  sessionUUID: string;
+  identityHash: string;
   payload: GenPayloadDto;
 }
 

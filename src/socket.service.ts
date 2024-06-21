@@ -9,7 +9,7 @@ export class SocketService {
     this.server = server;
   }
 
-  public emit(sessionUUID: string, payload: any) {
-    this.server.to(sessionUUID).emit(payload);
+  public emit(identityHash: string, payload: any) {
+    this.server.to(identityHash).emit(payload);
   }
 }

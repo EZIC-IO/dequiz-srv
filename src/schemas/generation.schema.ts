@@ -26,7 +26,7 @@ export enum GenerationActionStatus {
 @Schema()
 export class GenerationAction {
   @Prop({ required: true })
-  sessionUUID!: string;
+  identityHash!: string;
 
   @Prop({
     required: true,

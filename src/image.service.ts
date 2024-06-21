@@ -34,11 +34,11 @@ export class ImageService {
 
   async generateImage(
     genPrompt: string,
-    sessionUUID: string,
+    identityHash: string,
     vocation: RPGVocation,
   ) {
     const alreadyQueued = await this.generationActionModel.findOne({
-      sessionUUID,
+      identityHash,
       status: GenerationActionStatus.PROCESSING,
     });
     if (alreadyQueued) {
@@ -49,7 +49,7 @@ export class ImageService {
     const genAction = await new this.generationActionModel({
       epochId: this.currentEpoch,
       vocation,
-      sessionUUID,
+      identityHash,
     }).save();
 
     try {
@@ -80,7 +80,7 @@ export class ImageService {
       return this.generationActionModel.findById(genAction.id).exec();
     } catch (err: any) {
       this.logger.error(
-        `Failed to generate image for session ${sessionUUID}: ${err.response.data.error.message}`,
+        `Failed to generate image for session ${identityHash}: ${err.response.data.error.message}`,
       );
       this.logger.error(err.response.data.error);
       throw new BadRequestException(err.response.data.error.message);

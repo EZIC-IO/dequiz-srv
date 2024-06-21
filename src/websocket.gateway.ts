@@ -26,8 +26,8 @@ export class WebsocketGateway
   }
 
   handleConnection(client: Socket) {
-    const sessionUUID = client.handshake.auth.sessionUUID;
-    client.join(sessionUUID);
+    const identityHash = client.handshake.auth.identityHash;
+    client.join(identityHash);
     console.log(`Client connected: ${client.id}`);
     this.clients.add(client);
   }
