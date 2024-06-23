@@ -19,8 +19,8 @@ export class PromptConstructionService {
     prompt += `${this._getWho(gender)} has ${hairLength} ${hairColor} hair, ${eyeColor} eyes, and ${this._getWhos(gender)} face is clearly visible. `;
     prompt += `${this._getWho(gender)} is wearing ${this._getClothes(rpgVocation)}, practical clothing, ready for action. `;
     prompt += `${this._getWhos(gender)} skin tone is similar to ${skinTone}. `;
-    if (gender === Gender.MALE) {
-      prompt += `He has ${facialHair} facial hair (beard). `;
+    if (gender === Gender.MALE && facialHair) {
+      prompt += `He has beard. `;
     }
     prompt += `The background features ${this._getBackground(rpgVocation)} without unnecessary symbols or writings.`;
     return prompt;

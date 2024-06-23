@@ -95,21 +95,12 @@ export enum EyeColorHEX {
   VIOLET = '#EE82EE',
 }
 
-export enum FacialHair {
-  NO = 'no',
-  SHORT = 'short',
-  MEDIUM = 'medium',
-  LONG = 'long',
-}
-
-export default HairColor;
-
 export class GenPayloadDto {
   rpgVocation: RPGVocation;
   gender?: Gender;
   skinTone?: SkinTone;
   hairColor?: HairColor;
   hairLength?: HairLength;
-  facialHair?: FacialHair;
+  facialHair?: boolean;
   eyeColor?: EyeColor;
 }
