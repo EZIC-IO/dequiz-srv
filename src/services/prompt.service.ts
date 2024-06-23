@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Gender, GenPayloadDto, RPGVocation } from './dto';
+import { Gender, GenPayloadDto, RPGVocation } from '../dto';
 
 @Injectable()
 export class PromptConstructionService {

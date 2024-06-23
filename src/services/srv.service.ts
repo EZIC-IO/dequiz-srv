@@ -4,15 +4,11 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  GenerationAction,
-  GenerationActionStatus,
-} from './schemas/generation.schema';
+import { GenerationAction, GenerationActionStatus, Epoch } from '../schemas';
 import { Model } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
-import { Epoch } from './schemas/epoch.schema';
-import { ReportSuccessfulMintDto } from './dto';
-import { EXTERNAL_CONVENIENCE_BASE_URLS } from './constants';
+import { ReportSuccessfulMintDto } from '../dto';
+import { EXTERNAL_CONVENIENCE_BASE_URLS } from '../constants';
 
 @Injectable()
 export class SrvService {
@@ -28,7 +24,7 @@ export class SrvService {
     return 'hello';
   }
 
-  async getLatestGenActionBySessionUUID(
+  async getLatestGenActionByIdentityHash(
     identityHash: string,
   ): Promise<GenerationAction> {
     const genAction = await this.generationActionModel

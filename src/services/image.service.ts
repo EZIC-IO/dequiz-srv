@@ -2,13 +2,9 @@ import { HttpService } from '@nestjs/axios';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
-import {
-  GenerationAction,
-  GenerationActionStatus,
-} from './schemas/generation.schema';
+import { GenerationAction, GenerationActionStatus, Epoch } from '../schemas';
 import { Model } from 'mongoose';
-import { Epoch } from './schemas/epoch.schema';
-import { RPGVocation } from './dto';
+import { RPGVocation } from '../dto';
 
 @Injectable()
 export class ImageService {

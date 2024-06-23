@@ -1,11 +1,14 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
-import { SrvService } from './srv.service';
-import { ImageService } from './image.service';
-import { IPFSService } from './ipfs.service';
+import { SrvService } from './services';
+import {
+  ImageService,
+  IPFSService,
+  PromptConstructionService,
+} from './services';
 import { GenImgDto, InitPublishDto, ReportSuccessfulMintDto } from './dto';
 import { RateLimiterProxyGuard } from './guards/rate-limiter-proxy.guard';
 import { Throttle } from '@nestjs/throttler';
-import { PromptConstructionService } from './prompt.service';
+import { ApiHeader } from '@nestjs/swagger';
 
 @Controller()
 export class SrvController {
@@ -23,12 +26,15 @@ export class SrvController {
 
   @Get('latest-gen-action/:identityHash')
   async getLatestGenAction(@Param('identityHash') identityHash: string) {
-    return this.srvService.getLatestGenActionBySessionUUID(identityHash);
+    return this.srvService.getLatestGenActionByIdentityHash(identityHash);
   }
 
   // >> Image generation is available for 4 requests per 45 minutes to prevent abuse
   @UseGuards(RateLimiterProxyGuard)
   @Throttle({ default: { limit: 4, ttl: 45 * 60000 } })
+  @ApiHeader({
+    name: 'x-signature',
+  })
   @Post('gen-img')
   async genImage(@Body() data: GenImgDto) {
     const genPrompt =

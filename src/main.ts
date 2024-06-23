@@ -3,7 +3,11 @@ import { SrvModule } from './srv.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const srv = await NestFactory.create(SrvModule, { cors: true });
+  const srv = await NestFactory.create(SrvModule);
+
+  srv.enableCors({
+    origin: 'http://localhost:3000',
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Prototype')

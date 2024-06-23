@@ -12,7 +12,7 @@ import {
   GenerationAction,
   GenerationActionStatus,
   NFTMetadata,
-} from './schemas/generation.schema';
+} from '../schemas/generation.schema';
 import { Model } from 'mongoose';
 import { NFTMetadataService } from './nft-metadata.service';
 

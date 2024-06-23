@@ -1,11 +1,20 @@
-import { Global, Module } from '@nestjs/common';
+import {
+  Global,
+  MiddlewareConsumer,
+  Module,
+  RequestMethod,
+} from '@nestjs/common';
 import { SrvController } from './srv.controller';
-import { SrvService } from './srv.service';
+import {
+  SrvService,
+  ImageService,
+  IPFSService,
+  PromptConstructionService,
+  NFTMetadataService,
+} from './services';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ImageService } from './image.service';
 import { ScheduleModule } from '@nestjs/schedule';
-import { IPFSService } from './ipfs.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Epoch, EpochSchema } from './schemas/epoch.schema';
 import {
@@ -13,10 +22,9 @@ import {
   GenerationActionSchema,
 } from './schemas/generation.schema';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { PromptConstructionService } from './prompt.service';
 import { WebsocketGateway } from './websocket.gateway';
-import { SocketService } from './socket.service';
-import { NFTMetadataService } from './nft-metadata.service';
+import { SocketService } from './services/socket.service';
+import { SecureSignatureMiddleware } from './middlewares';
 
 @Global()
 @Module({
@@ -55,4 +63,10 @@ import { NFTMetadataService } from './nft-metadata.service';
     SocketService,
   ],
 })
-export class SrvModule {}
+export class SrvModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(SecureSignatureMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.POST });
+  }
+}
