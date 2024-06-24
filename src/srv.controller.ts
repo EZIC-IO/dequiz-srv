@@ -53,6 +53,9 @@ export class SrvController {
   // >> IPFS upload is available for 4 requests per 10 minutes to prevent abuse
   @UseGuards(RateLimiterProxyGuard)
   @Throttle({ default: { limit: 4, ttl: 10 * 60000 } })
+  @ApiHeader({
+    name: 'x-signature',
+  })
   @Post('init-publish')
   async initiatePublishToIPFS(@Body() { genActionId, name }: InitPublishDto) {
     const ipfsImgURL = await this.ipfsService.uploadNFTImg(genActionId);
@@ -63,6 +66,9 @@ export class SrvController {
     });
   }
 
+  @ApiHeader({
+    name: 'x-signature',
+  })
   @Post('report-successful-mint')
   async reportSuccessfulMing(@Body() data: ReportSuccessfulMintDto) {
     return this.srvService.reportSuccessfulMint(data);
