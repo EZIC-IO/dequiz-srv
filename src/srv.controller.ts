@@ -24,9 +24,15 @@ export class SrvController {
     return this.srvService.getHello();
   }
 
+  // >> TODO: Add epochId filtration as well /:epochId/:genActionId
   @Get('latest-gen-action/:identityHash')
   async getLatestGenAction(@Param('identityHash') identityHash: string) {
     return this.srvService.getLatestGenActionByIdentityHash(identityHash);
+  }
+
+  @Get('minted-gen-action/:identityHash')
+  async getMintedGenAction(@Param('identityHash') identityHash: string) {
+    return this.srvService.getMintedGenActionByIdentityHash(identityHash);
   }
 
   // >> Image generation is available for 4 requests per 45 minutes to prevent abuse

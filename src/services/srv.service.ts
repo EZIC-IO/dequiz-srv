@@ -38,6 +38,20 @@ export class SrvService {
     return genAction;
   }
 
+  async getMintedGenActionByIdentityHash(
+    identityHash: string,
+  ): Promise<GenerationAction> {
+    const genAction = await this.generationActionModel
+      .findOne({ identityHash, status: GenerationActionStatus.MINTED })
+      .sort({ createdAt: -1 })
+      .exec();
+    if (!genAction) {
+      return null;
+    }
+
+    return genAction;
+  }
+
   async reportSuccessfulMint({
     genActionId,
     mintTx,
