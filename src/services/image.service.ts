@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { GenerationAction, GenerationActionStatus, Epoch } from '../schemas';
 import { Model } from 'mongoose';
 import { RPGVocation } from '../dto';
+import * as util from 'util';
 
 @Injectable()
 export class ImageService {
@@ -33,10 +34,12 @@ export class ImageService {
     const alreadyQueued = await this.generationActionModel.findOne({
       identityHash,
       status: GenerationActionStatus.PROCESSING,
+      // >> Ensure that the generation action was created within the last minute
+      createdAt: { $gt: +new Date(Date.now() - 1000 * 60) },
     });
     if (alreadyQueued) {
       throw new BadRequestException(
-        'NFT generation is already in queue, please wait for completion',
+        'NFT generation is already in queue, please wait for completion or try again in a minute',
       );
     }
     const genAction = await new this.generationActionModel({
@@ -73,10 +76,10 @@ export class ImageService {
       return this.generationActionModel.findById(genAction.id).exec();
     } catch (err: any) {
       this.logger.error(
-        `Failed to generate image for session ${identityHash}: ${err.response.data.error.message}`,
+        `Failed to generate image for session ${identityHash}; See below:`,
       );
-      this.logger.error(err.response.data.error);
-      throw new BadRequestException(err.response.data.error.message);
+      this.logger.error(util.inspect(err, { depth: null }));
+      throw new BadRequestException(err?.response?.data?.error?.message);
     }
   }
 }
