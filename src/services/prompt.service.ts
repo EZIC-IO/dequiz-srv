@@ -12,15 +12,13 @@ export class PromptConstructionService {
     gender,
     hairColor,
     hairLength,
-    skinTone,
   }: GenPayloadDto): string {
     let prompt = `An anime-style ${gender !== Gender.OTHER ? gender : ''} ${rpgVocation} from a fantasy RPG world. `;
-    prompt += `The style is bright, vibrant, and majestic. The canvas should never be white. `;
+    prompt += `The style is bright, vibrant, and majestic. The canvas should never be plain white, it should be immersive instead. `;
     prompt += `${this._getWho(gender)} has ${hairLength} ${hairColor} hair, ${eyeColor} eyes, and ${this._getWhos(gender)} face is clearly visible. `;
     prompt += `${this._getWho(gender)} is wearing ${this._getClothes(rpgVocation)}, practical clothing, ready for action. `;
-    prompt += `${this._getWhos(gender)} skin tone is similar to ${skinTone}. `;
     if (gender === Gender.MALE && facialHair) {
-      prompt += `He has beard. `;
+      prompt += `He has facial hair (beard). `;
     }
     prompt += `The background features ${this._getBackground(rpgVocation)} without unnecessary symbols or writings.`;
     return prompt;

@@ -35,7 +35,7 @@ export class ImageService {
       identityHash,
       status: GenerationActionStatus.PROCESSING,
       // >> Ensure that the generation action was created within the last minute
-      createdAt: { $gt: +new Date(Date.now() - 1000 * 60) },
+      createdAt: { $gt: Date.now() - 1000 * 60 },
     });
     if (alreadyQueued) {
       throw new BadRequestException(
