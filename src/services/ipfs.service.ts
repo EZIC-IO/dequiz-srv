@@ -11,7 +11,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import {
   GenerationAction,
   GenerationActionStatus,
-  NFTMetadata,
 } from '../schemas/generation.schema';
 import { Model } from 'mongoose';
 import { NFTMetadataService } from './nft-metadata.service';
@@ -21,12 +20,6 @@ export class IPFSService {
   private readonly logger = new Logger(IPFSService.name);
   private ipfsSdk: ThirdwebStorage;
   private readonly ttlInMinutes = 60;
-
-  private readonly testMetadata: Omit<NFTMetadata, 'image'> = {
-    name: 'Test Metadata',
-    description: 'Test Description',
-    attributes: [{ trait_type: 'IS TEST', value: 'YES' }],
-  };
 
   constructor(
     private readonly configService: ConfigService,
@@ -103,8 +96,8 @@ export class IPFSService {
       responseType: 'stream',
     });
     const fileId = uuidv4();
+    fse.ensureDirSync(path.join(__dirname, '..', 'img-files'));
     const filePath = path.join(__dirname, '..', 'img-files', `${fileId}.png`);
-
     return new Promise((resolve, reject) => {
       const writer = fse.createWriteStream(filePath);
       response.data.pipe(writer);
