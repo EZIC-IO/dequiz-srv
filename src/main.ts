@@ -6,7 +6,11 @@ async function bootstrap() {
   const srv = await NestFactory.create(SrvModule);
 
   srv.enableCors({
-    origin: 'http://localhost:3000',
+    origin: [
+      'http://localhost:3000',
+      'https://dequiz.app',
+      /^http(s|):\/\/(|[\w.-]*\.)dequiz\.(app).*$/gi,
+    ],
   });
 
   const config = new DocumentBuilder()
