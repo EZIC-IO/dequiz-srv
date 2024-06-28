@@ -5,7 +5,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { GenerationAction, GenerationActionStatus, Epoch } from '../schemas';
 import { Model } from 'mongoose';
 import { RPGVocation } from '../dto';
-import * as util from 'util';
 
 @Injectable()
 export class ImageService {
@@ -78,8 +77,8 @@ export class ImageService {
       this.logger.error(
         `Failed to generate image for session ${identityHash}; See below:`,
       );
-      this.logger.error(util.inspect(err, { depth: null }));
-      throw new BadRequestException(err?.response?.data?.error?.message);
+      this.logger.error(err);
+      throw new BadRequestException('Failed to generate image');
     }
   }
 }
