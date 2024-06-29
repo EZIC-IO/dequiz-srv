@@ -5,7 +5,7 @@ export const EXTERNAL_CONVENIENCE_BASE_URLS = {
   },
   mainnet: {
     // >> Replace with actual mainnet links
-    openSea: 'https://testnets.opensea.io/assets/base-sepolia',
-    txBlockExplorer: 'https://base-sepolia.blockscout.com/tx',
+    openSea: 'https://opensea.io/assets/base',
+    txBlockExplorer: 'https://base.blockscout.com/tx',
   },
 };
